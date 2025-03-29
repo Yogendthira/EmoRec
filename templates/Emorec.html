@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmoRec - Your Emotional Companion</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        spline-viewer {
+            width: 100%;
+            height: 100vh;
+            transform: scale(1.15);
+            transform-origin: center center;
+            position: absolute;
+            top: 20px;
+            left: 0;
+        }
+        .speech-bubble {
+            position: absolute;
+            top: 20%;
+            left: 65%;
+            transform: translate(-20%, -50%);
+            background: linear-gradient(135deg, #333333, #1a1a1a);
+            border-radius: 20px;
+            padding: 20px 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            font-family: Arial, sans-serif;
+            font-size: 22px;
+            font-weight: bold;
+            min-width: 150px;
+            max-width: 300px;
+            text-align: left;
+            color: #ffffff;
+            border: 1px solid #444444;
+            opacity: 0;
+            animation: fadeIn 0.2s ease-in forwards;
+            animation-delay: 3s;
+            word-wrap: break-word;
+            overflow-y: auto;
+            max-height: 200px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-30%, -50%) scale(0.8); }
+            to { opacity: 1; transform: translate(-20%, -50%) scale(1); }
+        }
+        
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: -5px;
+            border-width: 10px 10px 10px 0;
+            border-style: solid;
+            border-color: transparent #2a2a2a transparent transparent;
+            transform: rotate(0deg);
+        }
+
+        .chat-container {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 600px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .welcome-message {
+            margin-bottom: 15px;
+            text-align: center;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .chat-input {
+            width: 100%;
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 30px;
+            border: 2px solid #444;
+            background-color: rgba(30, 30, 30, 0.7);
+            color: white;
+            font-size: 16px;
+        }
+
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #444, #222);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+    </style>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+</head>
+<body>
+    <spline-viewer url="https://prod.spline.design/9y6U6-9j5y9omTlI/scene.splinecode"></spline-viewer>
+    <div class="speech-bubble" id="speech-bubble">Hey there, I'm EmoRec</div>
+    
+    <div class="chat-container">
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Tell me how you're feeling..." />
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const speechBubble = document.getElementById('speech-bubble');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            
+            // Set initial state after animation completes
+            setTimeout(() => {
+                speechBubble.textContent = "I'm here for you";
+                speechBubble.style.opacity = '1';
+                speechBubble.style.transform = 'translate(-20%, -50%) scale(1)';
+            }, 3000);
+            
+            // Handle user input and API call
+            async function handleSendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return;
+                
+                // Clear input
+                userInput.value = '';
+                
+                // Show thinking state with animated dots
+                speechBubble.innerHTML = "Thinking<span class='loading-dots'></span>";
+                
+                try {
+                    console.log('Sending message to API:', message);
+                    
+                    // Make API request to your Flask backend
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+                    
+                    console.log('Response status:', response.status);
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        console.error('Error from API:', data.error);
+                        speechBubble.textContent = "I'm having trouble connecting right now. Try again later.";
+                    } else {
+                        // Limit response length to prevent overflow
+                        let responseText = data.message;
+                        if (responseText.length > 150) {
+                            responseText = responseText.substring(0, 147) + "...";
+                        }
+                        // Update speech bubble with AI response
+                        speechBubble.textContent = responseText;
+                    }
+                    
+                    // Make sure speech bubble is visible
+                    speechBubble.style.opacity = '1';
+                    speechBubble.style.transform = 'translate(-20%, -50%) scale(1)';
+                    
+                } catch (error) {
+                    console.error('Network Error:', error);
+                    speechBubble.textContent = "Connection issue. Please check your internet.";
+                }
+            }
+            
+            // Event listeners
+            sendBtn.addEventListener('click', handleSendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
