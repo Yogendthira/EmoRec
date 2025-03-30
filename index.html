@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmoRec - Your Emotional Companion</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
+</head>
+<body>
+    <!-- Front page -->
+    <div class="front-page" id="front-page">
+        <h1>Welcome to EmoRec</h1>
+        <p>Your emotional companion robot, designed to chat with you when you need someone to talk to.</p>
+        <div class="name-input">
+            <label for="user-name">What's your name?</label>
+            <input type="text" id="user-name" placeholder="Enter your name" />
+        </div>
+        <button class="start-button" id="start-button">Get Started</button>
+    </div>
+
+    <!-- Main app -->
+    <spline-viewer url="https://prod.spline.design/9y6U6-9j5y9omTlI/scene.splinecode"></spline-viewer>
+    <div class="speech-bubble" id="speech-bubble">Hello ! I'm EmoRec</div>
+    
+    <div class="chat-container">
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Tell me how you're feeling..." />
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

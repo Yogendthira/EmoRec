@@ -24,6 +24,7 @@
             position: absolute;
             top: 20px;
             left: 0;
+            visibility: hidden;
         }
         .speech-bubble {
             position: absolute;
@@ -44,8 +45,7 @@
             color: #ffffff;
             border: 1px solid #444444;
             opacity: 0;
-            animation: fadeIn 0.2s ease-in forwards;
-            animation-delay: 4s;
+            animation: none;
             word-wrap: break-word;
             overflow-y: auto;
             max-height: 200px;
@@ -70,10 +70,9 @@
         .chat-container {
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60%;
-            max-width: 450px;
+            right: 20px;
+            width: 40%;
+            max-width: 300px;
             z-index: 200;
             display: flex;
             flex-direction: column;
@@ -89,15 +88,10 @@
             flex: 1;
             padding: 12px 15px;
             border-radius: 30px;
-            border: none;
+            border: 2px solid #444;
             background-color: rgba(30, 30, 30, 0.7);
             color: white;
             font-size: 16px;
-            box-shadow: 0 0 0 2px transparent;
-            background-image: linear-gradient(rgba(30, 30, 30, 0.7), rgba(30, 30, 30, 0.7)), 
-                              linear-gradient(to bottom, #666666, #111111);
-            background-origin: border-box;
-            background-clip: content-box, border-box;
         }
 
         .chat-input button {
@@ -122,10 +116,117 @@
             60% { content: '...'; }
             80%, 100% { content: ''; }
         }
+        
+        /* Front page styles */
+        .front-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #333333, #1a1a1a);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            font-family: Arial, sans-serif;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .front-page h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .front-page p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 80%;
+            color: #cccccc;
+        }
+        
+        .name-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 30px;
+        }
+        
+        .name-input label {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .name-input input {
+            padding: 15px 20px;
+            border-radius: 30px;
+            border: 2px solid #555;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 18px;
+            width: 100%;
+            text-align: center;
+            outline: none;
+        }
+        
+        .name-input input:focus {
+            border-color: #888;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .start-button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #555, #333);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .start-button:hover {
+            background: linear-gradient(135deg, #666, #444);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .start-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
 </head>
 <body>
+    <!-- Front page -->
+    <div class="front-page" id="front-page">
+        <h1>Welcome to EmoRec</h1>
+        <p>Your emotional companion robot, designed to chat with you when you need someone to talk to.</p>
+        <div class="name-input">
+            <label for="user-name">What's your name?</label>
+            <input type="text" id="user-name" placeholder="Enter your name" />
+        </div>
+        <button class="start-button" id="start-button">Get Started</button>
+    </div>
+
+    <!-- Main app -->
     <spline-viewer url="https://prod.spline.design/9y6U6-9j5y9omTlI/scene.splinecode"></spline-viewer>
     <div class="speech-bubble" id="speech-bubble">Hello ! I'm EmoRec</div>
     
@@ -138,15 +239,46 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const frontPage = document.getElementById('front-page');
+            const startButton = document.getElementById('start-button');
+            const userName = document.getElementById('user-name');
             const speechBubble = document.getElementById('speech-bubble');
             const userInput = document.getElementById('user-input');
             const sendBtn = document.getElementById('send-btn');
+            const splineViewer = document.querySelector('spline-viewer');
             
-            // Set initial state after animation completes
-            setTimeout(() => {
-                speechBubble.style.opacity = '1';
-                speechBubble.style.transform = 'translate(-20%, -50%) scale(1)';
-            }, 4000);
+            // Hide speech bubble initially
+            speechBubble.style.opacity = '0';
+            
+            // Handle start button click
+            startButton.addEventListener('click', function() {
+                const name = userName.value.trim();
+                frontPage.classList.add('hidden');
+                
+                // Show the spline viewer
+                splineViewer.style.visibility = 'visible';
+                
+                // Set personalized message if name was entered - after animation delay
+                setTimeout(() => {
+                    if (name) {
+                        speechBubble.textContent = `Hello ${name}! I'm EmoRec`;
+                    }
+                    // Apply the fade-in animation through class
+                    speechBubble.style.animation = 'fadeIn 0.2s ease-in forwards';
+                    // Ensure it shows up
+                    setTimeout(() => {
+                        speechBubble.style.opacity = '1';
+                        speechBubble.style.transform = 'translate(-20%, -50%) scale(1)';
+                    }, 200);
+                }, 4000); // Wait for robot animation to complete
+            });
+            
+            // Allow pressing Enter to start
+            userName.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    startButton.click();
+                }
+            });
             
             // Handle user input
             function handleSendMessage() {
@@ -166,9 +298,10 @@
                     
                     // Basic responses for common questions
                     const messageLower = message.toLowerCase();
+                    const name = userName.value.trim();
                     
                     if (messageLower.includes("hey") || messageLower.includes("hello") || messageLower.includes("hi")) {
-                        response = "Hello there! How can I help you today?";
+                        response = name ? `Hello ${name}! How can I help you today?` : "Hello there! How can I help you today?";
                     }
                     else if (messageLower.includes("how are you")) {
                         response = "I'm doing well, thank you for asking! How are you feeling?";
@@ -183,19 +316,19 @@
                         response = "You're welcome! I'm happy to help.";
                     }
                     else if (messageLower.includes("good morning")) {
-                        response = "Good morning! Hope your day is off to a great start!";
+                        response = name ? `Good morning, ${name}! Hope your day is off to a great start!` : "Good morning! Hope your day is off to a great start!";
                     }
                     else if (messageLower.includes("good afternoon")) {
-                        response = "Good afternoon! How's your day going so far?";
+                        response = name ? `Good afternoon, ${name}! How's your day going so far?` : "Good afternoon! How's your day going so far?";
                     }
                     else if (messageLower.includes("good evening")) {
-                        response = "Good evening! I hope you had a nice day.";
+                        response = name ? `Good evening, ${name}! I hope you had a nice day.` : "Good evening! I hope you had a nice day.";
                     }
                     else if (messageLower.includes("good night")) {
-                        response = "Good night! Rest well and have pleasant dreams.";
+                        response = name ? `Good night, ${name}! Rest well and have pleasant dreams.` : "Good night! Rest well and have pleasant dreams.";
                     }
                     else if (messageLower.includes("bye") || messageLower.includes("goodbye") || messageLower.includes("see you")) {
-                        response = "Goodbye! I'll be here when you want to chat again.";
+                        response = name ? `Goodbye, ${name}! I'll be here when you want to chat again.` : "Goodbye! I'll be here when you want to chat again.";
                     }
                     else if (messageLower.includes("how do you work") || messageLower.includes("how were you made")) {
                         response = "I'm a digital robot created with 3D graphics and some simple programming!";
@@ -213,16 +346,23 @@
                         response = "I live in the digital world, ready to chat with you anytime!";
                     }
                     else if (messageLower.includes("i'm sad") || messageLower.includes("feeling sad") || messageLower.includes("i am sad")) {
-                        response = "I'm sorry to hear that you're feeling sad. Remember that it's okay to feel this way sometimes.";
+                        response = name ? `I'm sorry to hear that you're feeling sad, ${name}. Remember that it's okay to feel this way sometimes.` : "I'm sorry to hear that you're feeling sad. Remember that it's okay to feel this way sometimes.";
                     }
                     else if (messageLower.includes("i'm happy") || messageLower.includes("feeling happy") || messageLower.includes("i am happy")) {
-                        response = "That's wonderful! I'm happy to hear you're feeling good!";
+                        response = name ? `That's wonderful, ${name}! I'm happy to hear you're feeling good!` : "That's wonderful! I'm happy to hear you're feeling good!";
                     }
                     else if (messageLower.includes("music") || messageLower.includes("song")) {
                         response = "Music can be so uplifting! What kind of music do you enjoy?";
                     }
                     else if (messageLower.includes("favorite color") || messageLower.includes("favourite color")) {
                         response = "I'm quite fond of blue and silver tones. How about you?";
+                    }
+                    else if (messageLower.includes("my name")) {
+                        if (name) {
+                            response = `Your name is ${name}! I remember you told me when we first met.`;
+                        } else {
+                            response = "You haven't told me your name yet. Would you like to share it?";
+                        }
                     }
                     else {
                         // For messages we don't have specific responses for, just echo back
@@ -246,7 +386,7 @@
                 }, 1000); // 1 second delay to simulate thinking
             }
             
-            // Event listeners
+            // Event listeners for chat
             sendBtn.addEventListener('click', handleSendMessage);
             userInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {

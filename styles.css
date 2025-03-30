@@ -1,0 +1,208 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #ffffff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+spline-viewer {
+    width: 100%;
+    height: 100vh;
+    transform: scale(1.15);
+    transform-origin: center center;
+    position: absolute;
+    top: 20px;
+    left: 0;
+    visibility: hidden;
+}
+
+.speech-bubble {
+    position: absolute;
+    top: 20%;
+    left: 65%;
+    transform: translate(-20%, -50%);
+    background: linear-gradient(135deg, #333333, #1a1a1a);
+    border-radius: 20px;
+    padding: 20px 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    font-family: Arial, sans-serif;
+    font-size: 22px;
+    font-weight: bold;
+    min-width: 150px;
+    max-width: 300px;
+    text-align: left;
+    color: #ffffff;
+    border: 1px solid #444444;
+    opacity: 0;
+    animation: none;
+    word-wrap: break-word;
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-30%, -50%) scale(0.8); }
+    to { opacity: 1; transform: translate(-20%, -50%) scale(1); }
+}
+
+.speech-bubble:after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    left: -5px;
+    border-width: 10px 10px 10px 0;
+    border-style: solid;
+    border-color: transparent #2a2a2a transparent transparent;
+    transform: rotate(0deg);
+}
+
+.chat-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 40%;
+    max-width: 300px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-input {
+    width: 100%;
+    display: flex;
+    margin-top: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 30px;
+    border: 2px solid #444;
+    background-color: rgba(30, 30, 30, 0.7);
+    color: white;
+    font-size: 16px;
+}
+
+.chat-input button {
+    margin-left: 10px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #444, #222);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.loading-dots:after {
+    content: '.';
+    animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60% { content: '...'; }
+    80%, 100% { content: ''; }
+}
+
+/* Front page styles */
+.front-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #333333, #1a1a1a);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    color: white;
+    font-family: Arial, sans-serif;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.front-page h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    text-align: center;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.front-page p {
+    font-size: 1.2rem;
+    margin-bottom: 40px;
+    text-align: center;
+    max-width: 80%;
+    color: #cccccc;
+}
+
+.name-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 30px;
+}
+
+.name-input label {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.name-input input {
+    padding: 15px 20px;
+    border-radius: 30px;
+    border: 2px solid #555;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 18px;
+    width: 100%;
+    text-align: center;
+    outline: none;
+}
+
+.name-input input:focus {
+    border-color: #888;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.start-button {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #555, #333);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.start-button:hover {
+    background: linear-gradient(135deg, #666, #444);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.start-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+} 
