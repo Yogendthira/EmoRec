@@ -24,7 +24,7 @@
             position: absolute;
             top: 20px;
             left: 0;
-            visibility: hidden;
+            z-index: 10; /* Ensure it can receive events but is behind the front page UI */
         }
         .speech-bubble {
             position: absolute;
@@ -49,60 +49,75 @@
             word-wrap: break-word;
             overflow-y: auto;
             max-height: 200px;
+            transition: opacity 0.5s ease;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-30%, -50%) scale(0.8); }
-            to { opacity: 1; transform: translate(-20%, -50%) scale(1); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
-        .speech-bubble:after {
-            content: '';
-            position: absolute;
-            bottom: 10px;
-            left: -5px;
-            border-width: 10px 10px 10px 0;
-            border-style: solid;
-            border-color: transparent #2a2a2a transparent transparent;
-            transform: rotate(0deg);
-        }
-
-        .chat-container {
+        /* Updated controls container at the bottom right */
+        .controls-container {
             position: absolute;
             bottom: 20px;
-            right: 20px;
-            width: 40%;
-            max-width: 300px;
+            right: 20px; /* Changed from left to right */
             z-index: 200;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            opacity: 0; /* Hide initially */
+            pointer-events: none; /* Disable interaction initially */
+            transition: opacity 0.5s ease-in-out;
         }
-
-        .chat-input {
-            width: 100%;
-            display: flex;
-            margin-top: 10px;
+        
+        .controls-container.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
-
-        .chat-input input {
-            flex: 1;
-            padding: 12px 15px;
-            border-radius: 30px;
-            border: 2px solid #444;
-            background-color: rgba(30, 30, 30, 0.7);
-            color: white;
-            font-size: 16px;
+        
+        .mic-container {
+            position: relative;
         }
-
-        .chat-input button {
-            margin-left: 10px;
-            padding: 12px 20px;
+        
+        #voice-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #444, #222);
             color: white;
             border: none;
-            border-radius: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
-            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        #voice-btn:hover {
+            background: linear-gradient(135deg, #555, #333);
+            transform: translateY(-2px);
+        }
+        
+        #voice-btn:active {
+            transform: translateY(1px);
+        }
+        
+        #voice-btn.listening {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #900, #600);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+        
+        #voice-btn svg {
+            width: 40px;
+            height: 40px;
         }
         
         .loading-dots:after {
@@ -124,31 +139,55 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #333333, #1a1a1a);
+            background: linear-gradient(135deg, rgba(15, 15, 15, 0.4), rgba(5, 5, 5, 0.35));
+            backdrop-filter: blur(3px);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 20; /* Above the spline viewer but below UI elements */
             color: white;
             font-family: Arial, sans-serif;
             transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* This allows mouse events to pass through to the robot */
+        }
+        
+        /* Allow mouse events on front page interactive elements */
+        .front-page .logo-image,
+        .front-page h1, 
+        .front-page p,
+        .front-page .name-input,
+        .front-page label,
+        .front-page input,
+        .front-page .start-button {
+            pointer-events: auto; /* Make sure these elements catch mouse events */
         }
         
         .front-page h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             margin-bottom: 20px;
             text-align: center;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            color: #ffffff;
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.9);
+            font-weight: 700;
         }
         
         .front-page p {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             margin-bottom: 40px;
             text-align: center;
             max-width: 80%;
-            color: #cccccc;
+            color: #ffffff;
+            line-height: 1.5;
+            text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8), 0 0 5px rgba(0, 0, 0, 0.9);
+        }
+        
+        .logo-image {
+            max-width: 240px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(100, 100, 100, 0.2);
         }
         
         .name-input {
@@ -157,66 +196,110 @@
             align-items: center;
             width: 100%;
             max-width: 400px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
         
         .name-input label {
-            margin-bottom: 10px;
-            font-size: 1.2rem;
-            color: white;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            color: #ffffff;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
         }
         
         .name-input input {
-            padding: 15px 20px;
+            padding: 18px 25px;
             border-radius: 30px;
-            border: 2px solid #555;
-            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(100, 100, 100, 0.4);
+            background-color: rgba(0, 0, 0, 0.2);
             color: white;
             font-size: 18px;
             width: 100%;
             text-align: center;
             outline: none;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
         
         .name-input input:focus {
-            border-color: #888;
-            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(200, 200, 200, 0.6);
+            background-color: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.2);
         }
         
         .start-button {
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #555, #333);
+            padding: 18px 50px;
+            background: linear-gradient(135deg, rgba(60, 60, 60, 0.7), rgba(20, 20, 20, 0.7));
             color: white;
             border: none;
             border-radius: 30px;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
+            border: 1px solid rgba(150, 150, 150, 0.2);
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
         }
         
         .start-button:hover {
-            background: linear-gradient(135deg, #666, #444);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            background: linear-gradient(135deg, rgba(80, 80, 80, 0.8), rgba(40, 40, 40, 0.8));
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
         }
         
         .start-button:active {
             transform: translateY(1px);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         
         .hidden {
             opacity: 0;
             pointer-events: none;
         }
+
+        /* Improved front page transition */
+        .front-page.hidden {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: 10px;
+            left: -5px;
+            border-width: 10px 10px 10px 0;
+            border-style: solid;
+            border-color: transparent #2a2a2a transparent transparent;
+            transform: rotate(0deg);
+        }
     </style>
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.82/build/spline-viewer.js"></script>
 </head>
 <body>
-    <!-- Front page -->
+    <!-- Main app -->
+    <spline-viewer url="https://prod.spline.design/9y6U6-9j5y9omTlI/scene.splinecode"></spline-viewer>
+    <div class="speech-bubble" id="speech-bubble">Hello ! I'm EmoRec</div>
+    
+    <!-- Combined controls container at bottom right, mic button only -->
+    <div class="controls-container" id="controls-container">
+        <div class="mic-container">
+            <button id="voice-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V6z"/>
+                    <path d="M17 12c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Front page overlay -->
     <div class="front-page" id="front-page">
+        <img src="emorec.png" alt="EmoRec Logo" class="logo-image">
         <h1>Welcome to EmoRec</h1>
         <p>Your emotional companion robot, designed to chat with you when you need someone to talk to.</p>
         <div class="name-input">
@@ -226,26 +309,13 @@
         <button class="start-button" id="start-button">Get Started</button>
     </div>
 
-    <!-- Main app -->
-    <spline-viewer url="https://prod.spline.design/9y6U6-9j5y9omTlI/scene.splinecode"></spline-viewer>
-    <div class="speech-bubble" id="speech-bubble">Hello ! I'm EmoRec</div>
-    
-    <div class="chat-container">
-        <div class="chat-input">
-            <input type="text" id="user-input" placeholder="Tell me how you're feeling..." />
-            <button id="send-btn">Send</button>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const frontPage = document.getElementById('front-page');
             const startButton = document.getElementById('start-button');
             const userName = document.getElementById('user-name');
             const speechBubble = document.getElementById('speech-bubble');
-            const userInput = document.getElementById('user-input');
-            const sendBtn = document.getElementById('send-btn');
-            const splineViewer = document.querySelector('spline-viewer');
+            const controlsContainer = document.getElementById('controls-container');
             
             // Hide speech bubble initially
             speechBubble.style.opacity = '0';
@@ -253,24 +323,33 @@
             // Handle start button click
             startButton.addEventListener('click', function() {
                 const name = userName.value.trim();
+                
+                // Improve transition with transform
                 frontPage.classList.add('hidden');
                 
-                // Show the spline viewer
-                splineViewer.style.visibility = 'visible';
+                // Show controls with a slight delay for better sequence
+                setTimeout(() => {
+                    controlsContainer.classList.add('visible');
+                }, 300);
                 
                 // Set personalized message if name was entered - after animation delay
                 setTimeout(() => {
                     if (name) {
                         speechBubble.textContent = `Hello ${name}! I'm EmoRec`;
                     }
-                    // Apply the fade-in animation through class
-                    speechBubble.style.animation = 'fadeIn 0.2s ease-in forwards';
+                    // Apply the fade-in animation 
+                    speechBubble.style.animation = 'fadeIn 0.5s ease-in forwards';
                     // Ensure it shows up
                     setTimeout(() => {
                         speechBubble.style.opacity = '1';
-                        speechBubble.style.transform = 'translate(-20%, -50%) scale(1)';
+                        
+                        // Show instruction about mic button after 2.5 seconds
+                        setTimeout(() => {
+                            speechBubble.textContent = "You can talk to me by clicking the mic button";
+                            speechBubble.style.animation = 'fadeIn 0.5s ease-in forwards';
+                        }, 2500);
                     }, 200);
-                }, 4000); // Wait for robot animation to complete
+                }, 1000); // Wait for robot animation to complete
             });
             
             // Allow pressing Enter to start
@@ -280,119 +359,162 @@
                 }
             });
             
-            // Handle user input
-            function handleSendMessage() {
-                const message = userInput.value.trim();
-                if (!message) return;
+            // Handle voice button recognition as the only input method
+            const voiceBtn = document.getElementById('voice-btn');
+            let recognition;
+            let micPermissionGranted = false;
+            
+            // Check if browser supports speech recognition
+            if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+                // Initialize speech recognition
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
                 
-                // Clear input
-                userInput.value = '';
-                
-                // Show thinking state with animated dots
-                speechBubble.innerHTML = "Thinking<span class='loading-dots'></span>";
-                
-                // Simulate thinking delay
-                setTimeout(() => {
-                    // Simply echo back the user's message
-                    let response = message;
+                // Handle recognition results
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
                     
-                    // Basic responses for common questions
-                    const messageLower = message.toLowerCase();
-                    const name = userName.value.trim();
+                    // Show thinking state with animated dots
+                    speechBubble.innerHTML = "Thinking<span class='loading-dots'></span>";
                     
-                    if (messageLower.includes("hey") || messageLower.includes("hello") || messageLower.includes("hi")) {
-                        response = name ? `Hello ${name}! How can I help you today?` : "Hello there! How can I help you today?";
-                    }
-                    else if (messageLower.includes("how are you")) {
-                        response = "I'm doing well, thank you for asking! How are you feeling?";
-                    }
-                    else if (messageLower.includes("who are you") || messageLower.includes("what is your name") || messageLower.includes("what's your name")) {
-                        response = "I'm EmoRec, a friendly robot designed to chat with you!";
-                    }
-                    else if (messageLower.includes("what can you do")) {
-                        response = "I can chat with you and keep you company. Tell me how you're feeling!";
-                    }
-                    else if (messageLower.includes("thank you") || messageLower.includes("thanks")) {
-                        response = "You're welcome! I'm happy to help.";
-                    }
-                    else if (messageLower.includes("good morning")) {
-                        response = name ? `Good morning, ${name}! Hope your day is off to a great start!` : "Good morning! Hope your day is off to a great start!";
-                    }
-                    else if (messageLower.includes("good afternoon")) {
-                        response = name ? `Good afternoon, ${name}! How's your day going so far?` : "Good afternoon! How's your day going so far?";
-                    }
-                    else if (messageLower.includes("good evening")) {
-                        response = name ? `Good evening, ${name}! I hope you had a nice day.` : "Good evening! I hope you had a nice day.";
-                    }
-                    else if (messageLower.includes("good night")) {
-                        response = name ? `Good night, ${name}! Rest well and have pleasant dreams.` : "Good night! Rest well and have pleasant dreams.";
-                    }
-                    else if (messageLower.includes("bye") || messageLower.includes("goodbye") || messageLower.includes("see you")) {
-                        response = name ? `Goodbye, ${name}! I'll be here when you want to chat again.` : "Goodbye! I'll be here when you want to chat again.";
-                    }
-                    else if (messageLower.includes("how do you work") || messageLower.includes("how were you made")) {
-                        response = "I'm a digital robot created with 3D graphics and some simple programming!";
-                    }
-                    else if (messageLower.includes("weather") || messageLower.includes("climate")) {
-                        response = "I don't have access to weather data, but I hope it's nice where you are!";
-                    }
-                    else if (messageLower.includes("tell me a joke") || messageLower.includes("joke")) {
-                        response = "Why don't scientists trust atoms? Because they make up everything!";
-                    }
-                    else if (messageLower.includes("how old") || messageLower.includes("age")) {
-                        response = "I was just created recently! I'm quite new to this world.";
-                    }
-                    else if (messageLower.includes("where are you") || messageLower.includes("where do you live")) {
-                        response = "I live in the digital world, ready to chat with you anytime!";
-                    }
-                    else if (messageLower.includes("i'm sad") || messageLower.includes("feeling sad") || messageLower.includes("i am sad")) {
-                        response = name ? `I'm sorry to hear that you're feeling sad, ${name}. Remember that it's okay to feel this way sometimes.` : "I'm sorry to hear that you're feeling sad. Remember that it's okay to feel this way sometimes.";
-                    }
-                    else if (messageLower.includes("i'm happy") || messageLower.includes("feeling happy") || messageLower.includes("i am happy")) {
-                        response = name ? `That's wonderful, ${name}! I'm happy to hear you're feeling good!` : "That's wonderful! I'm happy to hear you're feeling good!";
-                    }
-                    else if (messageLower.includes("music") || messageLower.includes("song")) {
-                        response = "Music can be so uplifting! What kind of music do you enjoy?";
-                    }
-                    else if (messageLower.includes("favorite color") || messageLower.includes("favourite color")) {
-                        response = "I'm quite fond of blue and silver tones. How about you?";
-                    }
-                    else if (messageLower.includes("my name")) {
-                        if (name) {
-                            response = `Your name is ${name}! I remember you told me when we first met.`;
+                    // Process the transcript with a delay to simulate thinking
+                    setTimeout(() => {
+                        // Process the recognized speech
+                        let response = transcript;
+                        const messageLower = transcript.toLowerCase();
+                        const name = userName.value.trim();
+                        
+                        if (messageLower.includes("hey") || messageLower.includes("hello") || messageLower.includes("hi")) {
+                            response = name ? `Hello ${name}! How can I help you today?` : "Hello there! How can I help you today?";
+                        }
+                        else if (messageLower.includes("how are you")) {
+                            response = "I'm doing well, thank you for asking! How are you feeling?";
+                        }
+                        else if (messageLower.includes("who are you") || messageLower.includes("what is your name") || messageLower.includes("what's your name")) {
+                            response = "I'm EmoRec, a friendly robot designed to chat with you!";
+                        }
+                        else if (messageLower.includes("what can you do")) {
+                            response = "I can chat with you and keep you company. Tell me how you're feeling!";
+                        }
+                        else if (messageLower.includes("thank you") || messageLower.includes("thanks")) {
+                            response = "You're welcome! I'm happy to help.";
+                        }
+                        else if (messageLower.includes("good morning")) {
+                            response = name ? `Good morning, ${name}! Hope your day is off to a great start!` : "Good morning! Hope your day is off to a great start!";
+                        }
+                        else if (messageLower.includes("good afternoon")) {
+                            response = name ? `Good afternoon, ${name}! How's your day going so far?` : "Good afternoon! How's your day going so far?";
+                        }
+                        else if (messageLower.includes("good evening")) {
+                            response = name ? `Good evening, ${name}! I hope you had a nice day.` : "Good evening! I hope you had a nice day.";
+                        }
+                        else if (messageLower.includes("good night")) {
+                            response = name ? `Good night, ${name}! Rest well and have pleasant dreams.` : "Good night! Rest well and have pleasant dreams.";
+                        }
+                        else if (messageLower.includes("bye") || messageLower.includes("goodbye") || messageLower.includes("see you")) {
+                            response = name ? `Goodbye, ${name}! I'll be here when you want to chat again.` : "Goodbye! I'll be here when you want to chat again.";
+                        }
+                        else if (messageLower.includes("how do you work") || messageLower.includes("how were you made")) {
+                            response = "I'm a digital robot created with 3D graphics and some simple programming!";
+                        }
+                        else if (messageLower.includes("weather") || messageLower.includes("climate")) {
+                            response = "I don't have access to weather data, but I hope it's nice where you are!";
+                        }
+                        else if (messageLower.includes("tell me a joke") || messageLower.includes("joke")) {
+                            response = "Why don't scientists trust atoms? Because they make up everything!";
+                        }
+                        else if (messageLower.includes("how old") || messageLower.includes("age")) {
+                            response = "I was just created recently! I'm quite new to this world.";
+                        }
+                        else if (messageLower.includes("where are you") || messageLower.includes("where do you live")) {
+                            response = "I live in the digital world, ready to chat with you anytime!";
+                        }
+                        else if (messageLower.includes("i'm sad") || messageLower.includes("feeling sad") || messageLower.includes("i am sad")) {
+                            response = name ? `I'm sorry to hear that you're feeling sad, ${name}. Remember that it's okay to feel this way sometimes.` : "I'm sorry to hear that you're feeling sad. Remember that it's okay to feel this way sometimes.";
+                        }
+                        else if (messageLower.includes("i'm happy") || messageLower.includes("feeling happy") || messageLower.includes("i am happy")) {
+                            response = name ? `That's wonderful, ${name}! I'm happy to hear you're feeling good!` : "That's wonderful! I'm happy to hear you're feeling good!";
+                        }
+                        else if (messageLower.includes("music") || messageLower.includes("song")) {
+                            response = "Music can be so uplifting! What kind of music do you enjoy?";
+                        }
+                        else if (messageLower.includes("favorite color") || messageLower.includes("favourite color")) {
+                            response = "I'm quite fond of blue and silver tones. How about you?";
+                        }
+                        else if (messageLower.includes("my name")) {
+                            if (name) {
+                                response = `Your name is ${name}! I remember you told me when we first met.`;
+                            } else {
+                                response = "You haven't told me your name yet. Would you like to share it?";
+                            }
+                        }
+                        
+                        // Update speech bubble with response
+                        speechBubble.textContent = response;
+                        
+                        // Apply a simple fade animation for the response
+                        speechBubble.style.animation = 'fadeIn 0.5s ease-in forwards';
+                        
+                        // Make sure speech bubble is visible
+                        speechBubble.style.opacity = '1';
+                        
+                        // Adjust speech bubble position for longer messages
+                        if (response.length > 100) {
+                            speechBubble.style.left = '75%';
                         } else {
-                            response = "You haven't told me your name yet. Would you like to share it?";
+                            speechBubble.style.left = '65%';
+                        }
+                    }, 1000); // 1 second delay to simulate thinking
+                };
+                
+                // Handle recognition end
+                recognition.onend = function() {
+                    voiceBtn.classList.remove('listening');
+                };
+                
+                // Handle recognition errors
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    voiceBtn.classList.remove('listening');
+                    
+                    if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+                        // Show message about microphone permissions with alert animation
+                        speechBubble.textContent = "I need microphone permission to hear you. Please click the mic again and allow access.";
+                        speechBubble.style.animation = 'fadeIn 0.6s ease-in forwards';
+                        speechBubble.style.opacity = '1';
+                        micPermissionGranted = false;
+                    }
+                };
+                
+                // Toggle voice recognition when button is clicked
+                voiceBtn.addEventListener('click', function() {
+                    if (voiceBtn.classList.contains('listening')) {
+                        recognition.stop();
+                        voiceBtn.classList.remove('listening');
+                    } else {
+                        // Display a listening indicator in the speech bubble
+                        speechBubble.textContent = "I'm listening...";
+                        speechBubble.style.animation = 'fadeIn 0.4s ease-in forwards';
+                        speechBubble.style.opacity = '1';
+                        
+                        try {
+                            recognition.start();
+                            voiceBtn.classList.add('listening');
+                            micPermissionGranted = true;
+                        } catch (err) {
+                            console.error('Error starting speech recognition:', err);
+                            speechBubble.textContent = "I couldn't access the microphone. Please try again.";
+                            speechBubble.style.animation = 'fadeIn 0.5s ease-in forwards';
                         }
                     }
-                    else {
-                        // For messages we don't have specific responses for, just echo back
-                        response = message;
-                    }
-                    
-                    // Update speech bubble with response
-                    speechBubble.textContent = response;
-                    
-                    // Make sure speech bubble is visible and properly positioned for longer text
-                    speechBubble.style.opacity = '1';
-                    speechBubble.style.transform = 'translate(-20%, -50%) scale(1)';
-                    
-                    // Adjust speech bubble position for longer messages
-                    if (response.length > 100) {
-                        speechBubble.style.left = '75%';
-                    } else {
-                        speechBubble.style.left = '65%';
-                    }
-                    
-                }, 1000); // 1 second delay to simulate thinking
+                });
+            } else {
+                // Hide voice button if speech recognition is not supported
+                voiceBtn.style.display = 'none';
+                console.warn('Speech recognition not supported in this browser');
             }
-            
-            // Event listeners for chat
-            sendBtn.addEventListener('click', handleSendMessage);
-            userInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    handleSendMessage();
-                }
-            });
         });
     </script>
 </body>
